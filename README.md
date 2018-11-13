@@ -12,4 +12,3 @@ An application that automatically renames Skyrim save files to work on the Ninte
 ## Notes
 
 * The ID is used to distinguish between two save files with Characters that share the same name.
-* Created for use on Windows.

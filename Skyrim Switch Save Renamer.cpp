@@ -4,10 +4,15 @@
 #include <ctime>
 #include <fstream>
 #include <cstdlib>
+#ifdef _WIN32
+	#include <direct.h>
+	#define mkdir(dir, mode) _mkdir(dir)
+#endif
+#include <sys/stat.h>
 
 using namespace std;
 
-string version = "v1.2";
+string version = "v1.3";
 
 class savefile{
 	private:
@@ -43,7 +48,7 @@ class savefile{
 		void getID(){ //Prompts user for ID
 			string ID_str;
 			do{
-				system("@cls");
+				system("cls||tput reset");
 				cout << "Skyrim Switch Save Renamer " << version <<"\n        by SilverJolteon" << endl << endl;
 				cout << "Create a 4 character-long ID: ";
 				cin >> ID_str;
@@ -112,22 +117,27 @@ class savefile{
 			}
 			sav0 += ".sav0";
 			char level_str[4];
-			itoa(level, level_str, 10);
+			sprintf(level_str, "%d", level);
+			
 			sav1 += "_" + playtime + "_";
 			sav1 += level_str;
 			sav1 += "_1.sav1";
 			
-			string newFileName = name_str + "_" + playtime;
+			string directory = "./" + name_str + "_" + playtime;
+			string sav0_output = directory + "/" + sav0;
 			
-			string command = "if not exist " + newFileName + " mkdir " + newFileName;
-			system(command.c_str());
-			rename(filepath.c_str(), sav0.c_str());
-			command = "move " + sav0 + " " + newFileName + ">nul";
-			system(command.c_str());
-			fstream blank(newFileName + "/" + sav1, ios::out | ios::binary);
+			mkdir(directory.c_str(), 0733);
+			rename(filepath.c_str(), sav0_output.c_str());
+			fstream blank(directory + "/" + sav1, ios::out | ios::binary);
 			blank.close();
 		}
 };
+
+void pause(){ //If using Windows, pauses console windows
+	#ifdef _WIN32
+		system("pause");
+	#endif
+}
 
 bool checkFile(string filepath){
 	string header;
@@ -148,13 +158,14 @@ int main(int argc, char* argv[]){
 	if(argv[1] != NULL){ //Renames file as drag&drop argument
 		if(!checkFile(argv[1])){
 			cout << "Save not recognized!" << endl << endl;
-			system("pause");
+			pause();
 			return 0;
 		}
 		savefile save(argv[1]);
 		save.renameFile();
 	}
 	else{ //Renames file by running program
+		system("cls||tput reset");
 		string path, filepath; //Needs two separate strings to work
 		cout << "Skyrim Switch Save Renamer " << version << "\n        by SilverJolteon" << endl << endl;
 		cout << "To rename your save, simply drag it onto this program." << endl;
@@ -164,7 +175,7 @@ int main(int argc, char* argv[]){
 			path = path.substr(1, path.length()-2);
 			if(!checkFile(path)){
 				cout << "Save not recognized!" << endl << endl;
-				system("pause");
+				pause();
 				return 0;
 			}
 			savefile save(path);
@@ -173,7 +184,7 @@ int main(int argc, char* argv[]){
 		else{
 			if(!checkFile(filepath)){
 				cout << "Save not recognized!" << endl << endl;
-				system("pause");
+				pause();
 				return 0;
 			}
 			savefile save(filepath);
@@ -181,6 +192,6 @@ int main(int argc, char* argv[]){
 		}
 	}
 	cout << "Successfully renamed save!" << endl << endl;
-	system("pause");
+	pause();
 	return 0;
 }
